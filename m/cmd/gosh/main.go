@@ -1,16 +1,16 @@
 package main
 
 import (
+	"fmt"
+	"github.com/k1574/gosh/m/lexer"
 	"bufio"
 	"os"
-	"fmt"
 )
 
 func main() {
 	sc := bufio.NewScanner(os.Stdin)
-
-	for sc.Scan() {
-		fmt.Printf("'%s'\n", sc.Text())
+	for {
+		fmt.Printf("'%s'\n", lexer.Scan(sc))
 	}
 }
 
