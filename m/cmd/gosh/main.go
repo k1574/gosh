@@ -10,7 +10,14 @@ import (
 func main() {
 	sc := bufio.NewScanner(os.Stdin)
 	for {
-		fmt.Printf("'%s'\n", lexer.Scan(sc))
+		out, err := lexer.Scan(sc)
+		if err != nil {
+			fmt.Printf("Error: '%s'\n", err)
+		}
+		fmt.Println("Tokens:")
+		for _, v := range out {
+			fmt.Printf("'%s'\n", v)
+		}
 	}
 }
 
