@@ -7,65 +7,66 @@ import (
 	//"fmt"
 	"errors"
 	"github.com/k1574/gosh/m/syntax"
+	"github.com/k1574/gosh/m/token"
 )
 
 var (
-	Tokens = map[byte] func(string) (Token, string, error) {
+	Tokens = map[byte] func(string) (token.Token, string, error) {
 		syntax.OpeningBrace : OpeningBrace,
 		syntax.ClosingBrace : ClosingBrace,
 		syntax.Quote : QuotedWord,
 		syntax.CmdOutput : CmdOutput,
+		syntax.Concat : Concat,
 	}
 	NotFinishedQuotedWord = errors.New("Not finished quoted word")
 )
 
-type Token string
-
-func NewToken(s string) Token {
-	return Token(s)
-}
-
-func QuotedWord(s string) (Token, string, error){
+func QuotedWord(s string) (token.Token, string, error){
 	var (
 		i int
 	)
 
 	for i = 1 ; i < len(s) - 1 ; i++ {
-		if s[i] == syntax.Quote{
+		if s[i] == syntax.Quote {
 			if i == (len(s)) - 1 {
 				/* Last char in input is a Quote .*/
-				return NewToken(s), "", nil
+				return token.New(token.QuotedWord, s[1:i-1]), "", nil
 			} else if s[i+1] != syntax.Quote {
 				/* Found not escaped Quote. */
-				//fmt.Println("im in")
-				return NewToken(s[:i+1]), s[i+1:], nil
+				return token.New(token.QuotedWord, s[1:i]), s[i+1:], nil
 			}
 		}
 	}
 
-	return NewToken(""), s, NotFinishedQuotedWord
+	return token.New(token.Error, ""), s, NotFinishedQuotedWord
 }
 
-func OpeningBrace(s string) (Token, string, error){
-	return NewToken(string(syntax.OpeningBrace)), s[1:], nil
+func OpeningBrace(s string) (token.Token, string, error) {
+	return token.New(syntax.OpeningBrace, s[0:1]), s[1:], nil
 }
 
-func ClosingBrace(s string) (Token, string, error){
-	return NewToken(string(syntax.ClosingBrace)), s[1:], nil
+func ClosingBrace(s string) (token.Token, string, error) {
+	return token.New(token.OpeningBrace, s[0:1]), s[1:], nil
 }
 
-func CmdOutput(s string) (Token, string, error){
-	return NewToken(string(syntax.CmdOutput)), s[1:], nil
+func CmdOutput(s string) (token.Token, string, error) {
+	return token.New(token.CmdOutput, s[0:1]), s[1:], nil
 }
 
-func SimpleWord(s string) (Token, string, error){
-	return NewToken(string(syntax.CmdOutput)), s[1:], nil
+func Concat(s string) (token.Token, string, error) {
+	return token.New(token.Concat, s[0:1]), s[1:], nil
 }
 
-func GetNextToken(input string) (Token, string, error) {
-	s, _ := syntax.TrimLeftSpaces(input)
+func SimpleWord(s string) (token.Token, string, error){
+	left, right := syntax.TrimLeftWord(s)
+
+	return token.New(token.SimpleWord, left), right, nil
+}
+
+func GetNextToken(input string) (token.Token, string, error) {
+	_, s := syntax.TrimLeftSpaces(input)
 	if len(s) == 0 {
-		return NewToken(""), "", nil
+		return token.New(token.Empty, ""), "", nil
 	}
 
 	if v, notASimpleWord := Tokens[s[0]] ; notASimpleWord {
@@ -75,10 +76,10 @@ func GetNextToken(input string) (Token, string, error) {
 	}
 }
 
-func Scan(sc *bufio.Scanner) ([]Token, error) {
+func Scan(sc *bufio.Scanner) ([]token.Token, error) {
 	var (
-		ret []Token
-		tok Token
+		ret []token.Token
+		tok token.Token
 		err error
 		txt string
 	)
@@ -87,9 +88,8 @@ func Scan(sc *bufio.Scanner) ([]Token, error) {
 	txt = sc.Text()
 	for {
 		tok, txt, err = GetNextToken(txt)
-		//fmt.Printf("'%s' '%s'\n", string(tok), txt)
 		if err != nil {
-			break
+			return []token.Token{}, err
 		}
 		ret = append(ret, tok)
 		if txt == "" {

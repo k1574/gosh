@@ -15,7 +15,7 @@ const (
 	Escape = '\\'
 )
 
-func EqAnyOf[t byte](v t, a []t) bool {
+func EqAnyOf[t byte | string](v t, a []t) bool {
 	for _, c := range a {
 		if v == c {
 			return true
@@ -25,17 +25,36 @@ func EqAnyOf[t byte](v t, a []t) bool {
 	return false
 }
 
-func TrimLeft(s string, toTrim[]byte) (string, int) {
+func TrimLeft[t byte](a []t, fn func(v t) bool) ([]t, []t) {
 	var (
 		i int
 	)
 
-	for i = 0 ; EqAnyOf[byte]([]byte(s)[i], toTrim) && i<len(s) ; i++ {}
+	for i = 0 ;  i<len(a) && fn(a[i]); i++ {}
 
-	return s[i:], i
+	return a[:i], a[i:]
 }
 
-func TrimLeftSpaces(s string) (string, int) {
-	return TrimLeft(s, WordDels)
+func IsSpace(c byte) bool {
+	return EqAnyOf[byte](c, WordDels)
+}
+
+func IsSpecial(c byte) bool {
+	return EqAnyOf[byte](c, []byte{Concat,
+		OpeningBrace,
+		ClosingBrace,
+		Escape})
+}
+
+func TrimLeftSpaces(s string) (string, string) {
+	ret1, ret2 := TrimLeft[byte]([]byte(s), IsSpace)
+	return string(ret1), string(ret2)
+}
+
+func TrimLeftWord(s string) (string, string) {
+	ret1, ret2 := TrimLeft[byte]([]byte(s), func(b byte) bool {
+		return !IsSpace(b) && !IsSpecial(b)
+	})
+	return string(ret1), string(ret2)
 }
 

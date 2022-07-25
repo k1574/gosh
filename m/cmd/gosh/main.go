@@ -16,7 +16,7 @@ func main() {
 		}
 		fmt.Println("Tokens:")
 		for _, v := range out {
-			fmt.Printf("'%s'\n", v)
+			fmt.Printf("%v\n", v)
 		}
 	}
 }
