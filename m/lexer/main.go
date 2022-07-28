@@ -3,7 +3,7 @@ package lexer
 /* Implements basic separation of tokens in input. */
 
 import (
-	"bufio"
+	//"bufio"
 	//"fmt"
 	"errors"
 	"github.com/k1574/gosh/m/syntax"
@@ -17,6 +17,7 @@ var (
 		syntax.Quote : QuotedWord,
 		syntax.CmdOutput : CmdOutput,
 		syntax.Concat : Concat,
+		syntax.Semicolon : Semicolon,
 	}
 	NotFinishedQuotedWord = errors.New("Not finished quoted word")
 )
@@ -62,6 +63,9 @@ func SimpleWord(s string) (token.Token, string, error){
 
 	return token.New(token.SimpleWord, left), right, nil
 }
+func Semicolon(s string) (token.Token, string, error){
+	return token.New(token.Semicolon, s[0:1]), s[1:], nil
+}
 
 func GetNextToken(input string) (token.Token, string, error) {
 	_, s := syntax.TrimLeftSpaces(input)
@@ -76,16 +80,13 @@ func GetNextToken(input string) (token.Token, string, error) {
 	}
 }
 
-func Scan(sc *bufio.Scanner) ([]token.Token, error) {
+func Scan(txt string) ([]token.Token, error) {
 	var (
 		ret []token.Token
 		tok token.Token
 		err error
-		txt string
 	)
 
-	sc.Scan()
-	txt = sc.Text()
 	for {
 		tok, txt, err = GetNextToken(txt)
 		if err != nil {
@@ -96,6 +97,8 @@ func Scan(sc *bufio.Scanner) ([]token.Token, error) {
 			break
 		}
 	}
+
+	ret = append(ret, token.New(token.Semicolon, string(syntax.Semicolon)))
 
 	return ret, nil
 }

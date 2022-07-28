@@ -13,6 +13,7 @@ const (
 	CmdOutput = '`'
 	Concat = '^' 
 	Escape = '\\'
+	Semicolon = ';'
 )
 
 func EqAnyOf[t byte | string](v t, a []t) bool {
@@ -43,7 +44,8 @@ func IsSpecial(c byte) bool {
 	return EqAnyOf[byte](c, []byte{Concat,
 		OpeningBrace,
 		ClosingBrace,
-		Escape})
+		Escape,
+		Semicolon})
 }
 
 func TrimLeftSpaces(s string) (string, string) {

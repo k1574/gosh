@@ -1,6 +1,6 @@
 package token
 
-type Type int
+type Type uint8
 
 type Token struct {
 	T Type
@@ -16,6 +16,7 @@ const (
 	QuotedWord
 	SimpleWord
 	Concat
+	Semicolon
 )
 
 func New(t Type, v string) Token {
