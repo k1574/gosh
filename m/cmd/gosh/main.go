@@ -5,7 +5,6 @@ import (
 	"github.com/k1574/gosh/m/lexer"
 	"bufio"
 	"os"
-	"io"
 )
 
 func main() {

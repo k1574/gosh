@@ -1,9 +1,6 @@
 package syntax
 
-var (
-	WordDels = []byte{' ', '\t',}
-	SpecialChars = []byte{'$', '{', '}', '`',}
-)
+
 
 const (
 	Variable = '$'
@@ -14,6 +11,24 @@ const (
 	Concat = '^' 
 	Escape = '\\'
 	Semicolon = ';'
+	Ampersand = '&'
+	Pipe = '|'
+	If = "if"
+	Else = "else"
+	For = "for"
+
+)
+var (
+	WordDels = []byte{' ', '\t',}
+	SpecialChars = []byte{
+		OpeningBrace,
+		ClosingBrace,
+		Semicolon,
+		Ampersand,
+		Pipe,
+		Escape,
+		CmdOutput,
+		Concat}
 )
 
 func EqAnyOf[t byte | string](v t, a []t) bool {

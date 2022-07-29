@@ -17,6 +17,11 @@ const (
 	SimpleWord
 	Concat
 	Semicolon
+	Pipe
+	Or
+	And
+	Background
+	Escape
 )
 
 func New(t Type, v string) Token {

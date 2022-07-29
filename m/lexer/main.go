@@ -3,8 +3,6 @@ package lexer
 /* Implements basic separation of tokens in input. */
 
 import (
-	//"bufio"
-	//"fmt"
 	"errors"
 	"github.com/k1574/gosh/m/syntax"
 	"github.com/k1574/gosh/m/token"
@@ -18,6 +16,9 @@ var (
 		syntax.CmdOutput : CmdOutput,
 		syntax.Concat : Concat,
 		syntax.Semicolon : Semicolon,
+		syntax.Pipe : Pipe,
+		syntax.Ampersand : Ampersand,
+		syntax.Escape : Escape,
 	}
 	NotFinishedQuotedWord = errors.New("Not finished quoted word")
 )
@@ -66,6 +67,25 @@ func SimpleWord(s string) (token.Token, string, error){
 func Semicolon(s string) (token.Token, string, error){
 	return token.New(token.Semicolon, s[0:1]), s[1:], nil
 }
+func Escape(s string) (token.Token, string, error){
+	return token.New(token.Escape, s[0:1]), s[1:], nil
+}
+
+func Ampersand(s string) (token.Token, string, error) {
+	if len(s) > 1 && s[1] == s[0] {
+		return token.New(token.And, s[:2]), s[2:], nil
+	} else {
+		return token.New(token.Background, s[:1]), s[1:], nil
+	}
+}
+
+func Pipe(s string) (token.Token, string, error) {
+	if len(s) > 1 && s[1] == s[0] {
+		return token.New(token.Pipe, s[:2]), s[2:], nil
+	} else {
+		return token.New(token.Or, s[:1]), s[1:], nil
+	}
+}
 
 func GetNextToken(input string) (token.Token, string, error) {
 	_, s := syntax.TrimLeftSpaces(input)
@@ -98,7 +118,9 @@ func Scan(txt string) ([]token.Token, error) {
 		}
 	}
 
-	ret = append(ret, token.New(token.Semicolon, string(syntax.Semicolon)))
+	if ret[len(ret)-1].T != token.Escape {
+		ret = append(ret, token.New(token.Semicolon, string(syntax.Semicolon)))
+	}
 
 	return ret, nil
 }
