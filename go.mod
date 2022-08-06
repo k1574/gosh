@@ -1,4 +1,4 @@
-module github.com/k1574/gosh
+module github.com/surdeus/gosh
 
 go 1.18
 

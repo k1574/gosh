@@ -1,0 +1,18 @@
+# Tree
+
+Just trying to visualize what I want to get from
+the parser.
+
+> cat 1 2 3
+* [root]
+  * cmd 1
+    * cat
+    * 1
+    * 2
+    * 3
+
+> cat 1 && cat 2
+* [root]
+  * And-op
+    *
+

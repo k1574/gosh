@@ -4,8 +4,8 @@ package lexer
 
 import (
 	"errors"
-	"github.com/k1574/gosh/m/syntax"
-	"github.com/k1574/gosh/m/token"
+	"github.com/surdeus/gosh/src/syntax"
+	"github.com/surdeus/gosh/src/token"
 )
 
 var (
@@ -21,6 +21,7 @@ var (
 		syntax.Escape : Escape,
 	}
 	NotFinishedQuotedWord = errors.New("Not finished quoted word")
+	EOS = errors.New("end of string")
 )
 
 func QuotedWord(s string) (token.Token, string, error){
@@ -40,7 +41,7 @@ func QuotedWord(s string) (token.Token, string, error){
 		}
 	}
 
-	return token.New(token.Error, ""), s, NotFinishedQuotedWord
+	return token.New(token.Empty, ""), s, NotFinishedQuotedWord
 }
 
 func OpeningBrace(s string) (token.Token, string, error) {
@@ -90,7 +91,7 @@ func Pipe(s string) (token.Token, string, error) {
 func GetNextToken(input string) (token.Token, string, error) {
 	_, s := syntax.TrimLeftSpaces(input)
 	if len(s) == 0 {
-		return token.New(token.Empty, ""), "", nil
+		return token.New(token.Empty, ""), "", EOS
 	}
 
 	if v, notASimpleWord := Tokens[s[0]] ; notASimpleWord {
@@ -109,13 +110,12 @@ func Scan(txt string) ([]token.Token, error) {
 
 	for {
 		tok, txt, err = GetNextToken(txt)
-		if err != nil {
+		if err == EOS {
+			break
+		} else if err != nil {
 			return []token.Token{}, err
 		}
 		ret = append(ret, tok)
-		if txt == "" {
-			break
-		}
 	}
 
 	if ret[len(ret)-1].T != token.Escape {

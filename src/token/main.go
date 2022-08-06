@@ -8,8 +8,7 @@ type Token struct {
 }
 
 const (
-	Error Type = iota
-	Empty
+	Empty Type = iota
 	OpeningBrace
 	ClosingBrace
 	CmdOutput

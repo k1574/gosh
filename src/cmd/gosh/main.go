@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/k1574/gosh/m/lexer"
+	"github.com/surdeus/gosh/src/lexer"
 	"bufio"
 	"os"
 )
