@@ -9,22 +9,23 @@ type Type uint8
 
 type Tree struct {
 	T Type
+	// Value
 	V string
-	Ops []Tree
+	// Children
+	C []Tree
 }
 
 const (
 	Root Type = iota
-
-)
-
-var (
-	Operations = map[token.Type] Operation {
-		token.And : Operation{ 2 },
-		token.Or : Operation{ 1 },
-		token.Pipe : Operation{0},
-		token.Background : Operation{-1}
-	}
+	Block
+	If
+	Else
+	Or
+	And
+	Command
+	Backquote
+	SimpleWord
+	QuotedWord
 )
 
 func Parse(tk []token.Token) (Tree, error) {

@@ -3,16 +3,20 @@
 Just trying to visualize what I want to get from
 the parser.
 
-> cat 1 2 3
-* [root]
-  * cmd 1
-    * cat
-    * 1
-    * 2
-    * 3
-
-> cat 1 && cat 2
-* [root]
-  * And-op
-    *
+% cat 1 2 3^`{echo 7 ; echo 14} '5 6' ; cat 8 9 || cat 10 11 && cat 12 13
+* Block
+  * Command
+    * "cat" SimpleWord
+    * "1" SimpleWord
+    * "2" SimpleWord
+    * Concat
+      * "3" SimpleWord
+      * Backquote
+	* Block
+	  * Command
+	    * "echo" SimpleWord
+	    * "7" SimpleWord
+	  * Command
+	    * "echo" SimpleWord
+	    * "14" SimpleWord
 

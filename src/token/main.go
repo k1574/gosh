@@ -1,5 +1,7 @@
 package token
 
+//import "fmt"
+
 type Type uint8
 
 type Token struct {
@@ -11,7 +13,7 @@ const (
 	Empty Type = iota
 	OpeningBrace
 	ClosingBrace
-	CmdOutput
+	Backquote
 	QuotedWord
 	SimpleWord
 	Concat
@@ -24,6 +26,18 @@ const (
 )
 
 func New(t Type, v string) Token {
-	return Token{t, v}
+	return Token{
+		T: t,
+		V: v}
+}
+
+func IsAnyOf(in Type, of []Type) bool {
+	for _, v := range of {
+		if v == in {
+			return true
+		}
+	}
+
+	return false
 }
 

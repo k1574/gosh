@@ -13,7 +13,7 @@ var (
 		syntax.OpeningBrace : OpeningBrace,
 		syntax.ClosingBrace : ClosingBrace,
 		syntax.Quote : QuotedWord,
-		syntax.CmdOutput : CmdOutput,
+		syntax.Backquote : Backquote,
 		syntax.Concat : Concat,
 		syntax.Semicolon : Semicolon,
 		syntax.Pipe : Pipe,
@@ -45,15 +45,15 @@ func QuotedWord(s string) (token.Token, string, error){
 }
 
 func OpeningBrace(s string) (token.Token, string, error) {
-	return token.New(syntax.OpeningBrace, s[0:1]), s[1:], nil
-}
-
-func ClosingBrace(s string) (token.Token, string, error) {
 	return token.New(token.OpeningBrace, s[0:1]), s[1:], nil
 }
 
-func CmdOutput(s string) (token.Token, string, error) {
-	return token.New(token.CmdOutput, s[0:1]), s[1:], nil
+func ClosingBrace(s string) (token.Token, string, error) {
+	return token.New(token.ClosingBrace, s[0:1]), s[1:], nil
+}
+
+func Backquote(s string) (token.Token, string, error) {
+	return token.New(token.Backquote, s[0:1]), s[1:], nil
 }
 
 func Concat(s string) (token.Token, string, error) {
@@ -118,7 +118,10 @@ func Scan(txt string) ([]token.Token, error) {
 		ret = append(ret, tok)
 	}
 
-	if ret[len(ret)-1].T != token.Escape {
+	t := ret[len(ret)-1].T
+	if !token.IsAnyOf(t, []token.Type{token.OpeningBrace,
+			token.ClosingBrace,
+			token.Escape} ) {
 		ret = append(ret, token.New(token.Semicolon, string(syntax.Semicolon)))
 	}
 

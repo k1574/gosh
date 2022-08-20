@@ -1,0 +1,44 @@
+# Syntax
+
+Description of gosh syntax.
+
+## Basic
+
+Every script consists of list of commands as most of the
+shelll, like:
+
+	% cd dir1
+	% cat file1 file2
+
+## Variables
+
+	% set var val # Set new "var" inside variable with "val" value. Not env. var.
+	% unset var # Unset the "var" inside variable.
+	% export VAR VAL  # Export new env. variable VAR with VAL value
+	% import var ENVAR # Import environment variable to inside variable.
+	% unexport VAR # Unexport var so it is empty.
+	% echo $var # Will cause an error, var must be set or imported.
+
+## Condition
+
+If operator syntax:
+
+	% if test -f file && {echo Block for example} {
+		echo The file exists
+	} else {
+		echo The file does not exist
+	}
+
+Not:
+
+	% if test -f file
+	{
+		echo The file exists
+	}
+	else
+	{
+		echo The file does not exist
+	}
+
+The reasons are lexer limitations.
+

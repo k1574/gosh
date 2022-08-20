@@ -7,7 +7,7 @@ const (
 	OpeningBrace = '{'
 	ClosingBrace = '}'
 	Quote = '\''
-	CmdOutput = '`'
+	Backquote = '`'
 	Concat = '^' 
 	Escape = '\\'
 	Semicolon = ';'
@@ -27,7 +27,7 @@ var (
 		Ampersand,
 		Pipe,
 		Escape,
-		CmdOutput,
+		Backquote,
 		Concat}
 )
 
