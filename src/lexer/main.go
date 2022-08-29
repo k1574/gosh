@@ -125,6 +125,10 @@ func Scan(txt string) ([]token.Token, error) {
 		ret = append(ret, token.New(token.Semicolon, string(syntax.Semicolon)))
 	}
 
+	if t == token.Escape {
+		ret = ret[:len(ret)-2]
+	}
+
 	return ret, nil
 }
 

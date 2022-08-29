@@ -40,17 +40,3 @@ func Parse(tk []token.Token) (Tree, error) {
 	return t
 }
 
-func FindByTypeFromEnd(tk []token.Token, f token.Type) int {
-	var (
-		i int
-	)
-
-	for i = len(tk) - 1 ; i>=0 ; i-- {
-		if tk[i].T == f {
-			break
-		}
-	}
-
-	return i
-}
-
