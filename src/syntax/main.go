@@ -13,11 +13,8 @@ const (
 	Semicolon = ';'
 	Ampersand = '&'
 	Pipe = '|'
-	If = "if"
-	Else = "else"
-	For = "for"
-
 )
+
 var (
 	WordDels = []byte{' ', '\t',}
 	SpecialChars = []byte{

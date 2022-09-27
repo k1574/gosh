@@ -23,6 +23,7 @@ const (
 	And
 	Background
 	Escape
+	If
 )
 
 func New(t Type, v string) Token {

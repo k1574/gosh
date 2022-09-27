@@ -42,3 +42,17 @@ Not:
 
 The reasons are lexer limitations.
 
+# Alternative binary syntax
+
+The idea is to make the simplest and the shortest
+shell with just binary operators which will
+simplify parser and so on.
+
+	% test -f file &| {
+		echo file exists!
+	} || test -f file1 &| {
+		echo file1 exists!
+	} || {
+		echo none of files exist
+	}
+

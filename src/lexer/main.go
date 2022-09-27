@@ -6,6 +6,7 @@ import (
 	"errors"
 	"github.com/surdeus/gosh/src/syntax"
 	"github.com/surdeus/gosh/src/token"
+	"fmt"
 )
 
 var (
@@ -73,19 +74,26 @@ func Escape(s string) (token.Token, string, error){
 }
 
 func Ampersand(s string) (token.Token, string, error) {
-	if len(s) > 1 && s[1] == s[0] {
-		return token.New(token.And, s[:2]), s[2:], nil
-	} else {
-		return token.New(token.Background, s[:1]), s[1:], nil
-	}
+	if len(s) > 1 {
+		if s[1] == s[0] {
+			return token.New(token.And, s[:2]), s[2:], nil
+		} else if s[1] == syntax.Pipe {
+			fmt.Println("im in")
+			return token.New(token.If, s[:2]), s[2:], nil
+		}
+	} 
+
+	return token.New(token.Background, s[:1]), s[1:], nil
 }
 
 func Pipe(s string) (token.Token, string, error) {
-	if len(s) > 1 && s[1] == s[0] {
-		return token.New(token.Pipe, s[:2]), s[2:], nil
-	} else {
-		return token.New(token.Or, s[:1]), s[1:], nil
+	if len(s) > 1 {
+		if s[1] == s[0] {
+			return token.New(token.Pipe, s[:2]), s[2:], nil
+		} 
 	}
+
+	return token.New(token.Or, s[:1]), s[1:], nil
 }
 
 func GetNextToken(input string) (token.Token, string, error) {
