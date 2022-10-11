@@ -9,8 +9,34 @@ import (
 	"fmt"
 )
 
+type Status int8
+type Handler = func(string) (token.Token, string, error)
+type Handlers map[byte] Handler
+
+type Lexer struct {
+	Status Status
+	Handlers Handlers
+	Tokens []token.Token
+	Storage string
+	Line int
+}
+
+const (
+	Free Status = iota
+	InQuotedWord
+	InBlock
+	InComment
+)
+
 var (
-	Tokens = map[byte] func(string) (token.Token, string, error) {
+	EOS = errors.New("end of string")
+	NotFinishedQuotedWord = errors.New( "not finished quoted word")
+)
+
+func New() *Lexer {
+	var lexer Lexer
+	lexer.Status = Free
+	lexer.Handlers = Handlers {
 		syntax.OpeningBrace : OpeningBrace,
 		syntax.ClosingBrace : ClosingBrace,
 		syntax.Quote : QuotedWord,
@@ -22,16 +48,21 @@ var (
 		syntax.Escape : Escape,
 		syntax.Hashtag : Hashtag,
 	}
-	NotFinishedQuotedWord = errors.New("Not finished quoted word")
-	EOS = errors.New("end of string")
-)
+
+	lexer.Tokens = []token.Token{}
+
+	lexer.Storage = ""
+	lexer.Line = 1
+
+	return &lexer
+}
 
 func QuotedWord(s string) (token.Token, string, error){
 	var (
 		i int
 	)
 
-	for i = 1 ; i < len(s) - 1 ; i++ {
+	for i = 1 ; i < len(s) ; i++ {
 		if s[i] == syntax.Quote {
 			if i == (len(s)) - 1 {
 				/* Last char in input is a Quote .*/
@@ -43,7 +74,7 @@ func QuotedWord(s string) (token.Token, string, error){
 		}
 	}
 
-	return token.New(token.Empty, ""), s, NotFinishedQuotedWord
+	return token.New(token.QuotedWord, s[1:]), "", NotFinishedQuotedWord
 }
 
 func OpeningBrace(s string) (token.Token, string, error) {
@@ -101,47 +132,81 @@ func Hashtag(s string) (token.Token, string, error) {
 	return token.New(token.Hashtag, s[1:]), "", nil
 }
 
-func GetNextToken(input string) (token.Token, string, error) {
+func (l *Lexer)GetNextToken(input string) (token.Token, string, error) {
 	_, s := syntax.TrimLeftSpaces(input)
 	if len(s) == 0 {
 		return token.New(token.Empty, ""), "", EOS
 	}
 
-	if v, notASimpleWord := Tokens[s[0]] ; notASimpleWord {
+	if v, notASimpleWord := l.Handlers[s[0]] ; notASimpleWord {
 		return v(s)
 	} else {
 		return SimpleWord(s)
 	}
 }
 
-func Scan(txt string) ([]token.Token, error) {
+func CatchFinishingQuote(s string) (bool, string, string) {
+	for i, v := range s {
+		if v == syntax.Quote {
+			// End of string.
+			if i == len(s)-1 || s[i+1] != syntax.Quote {
+				return true, s[:i], s[i+1:]
+			}
+		}
+	}
+	return false, s, ""
+}
+
+func (l *Lexer)Scan(txt string) bool {
 	var (
-		ret []token.Token
 		tok token.Token
 		err error
 	)
 
-	for {
-		tok, txt, err = GetNextToken(txt)
-		if err == EOS {
-			break
-		} else if err != nil {
-			return []token.Token{}, err
+	if l.Status == InQuotedWord {
+		caught, left, right := CatchFinishingQuote(txt)
+		l.Storage += left
+		fmt.Println(caught)
+		if !caught {
+			l.Storage += "\n"
+			return false
 		}
-		ret = append(ret, tok)
+		l.Status = Free
+		fmt.Println(l.Status)
+		l.Tokens = append(l.Tokens, token.New(token.QuotedWord, l.Storage))
+		l.Storage = ""
+		txt = right
 	}
 
-	t := ret[len(ret)-1].T
+	fmt.Println(txt)
+
+	for {
+		tok, txt, err = l.GetNextToken(txt)
+		if err == EOS {
+			break
+		} else if err == NotFinishedQuotedWord {
+			fmt.Println("getting not finished")
+			l.Status = InQuotedWord
+			l.Storage = tok.V + "\n"
+			return false
+		}else if err != nil {
+			return false
+		}
+		fmt.Println("adding")
+		l.Tokens = append(l.Tokens, tok)
+	}
+
+	t := l.Tokens[len(l.Tokens)-1].T
 	if !token.IsAnyOf(t, []token.Type{token.OpeningBrace,
 			token.Semicolon,
 			token.Escape} ) {
-		ret = append(ret, token.New(token.Semicolon, string(syntax.Semicolon)))
+		l.Tokens = append(l.Tokens, token.New(token.Semicolon, string(syntax.Semicolon)))
 	}
 
 	if t == token.Escape {
-		ret = ret[:len(ret)-2]
+		l.Tokens = l.Tokens[:len(l.Tokens)-2]
 	}
 
-	return ret, nil
+	return l.Status == Free
 }
 

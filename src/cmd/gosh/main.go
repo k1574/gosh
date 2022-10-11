@@ -9,14 +9,13 @@ import (
 
 func main() {
 	sc := bufio.NewScanner(os.Stdin)
+	l := lexer.New()
 	for sc.Scan() {
-		out, err := lexer.Scan(sc.Text())
-		if err != nil {
-			break
-		}
+		l.Scan(sc.Text())
+		fmt.Printf("Status: %v\n", l.Status)
 		fmt.Println("Tokens:")
-		for _, v := range out {
-			fmt.Printf("%v\n", v)
+		for _, v := range l.Tokens {
+			fmt.Printf("%d\t\"%s\"\n", v.T, v.V)
 		}
 	}
 
