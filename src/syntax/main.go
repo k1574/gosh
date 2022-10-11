@@ -12,6 +12,7 @@ const (
 	Escape = '\\'
 	Semicolon = ';'
 	Ampersand = '&'
+	Hashtag = '#'
 	Pipe = '|'
 )
 

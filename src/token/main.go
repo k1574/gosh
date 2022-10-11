@@ -22,6 +22,7 @@ const (
 	Or
 	And
 	Background
+	Hashtag
 	Escape
 	If
 )
@@ -40,5 +41,17 @@ func IsAnyOf(in Type, of []Type) bool {
 	}
 
 	return false
+}
+
+func RemoveAllOccurencesOf(t Type, from []Token) []Token {
+	ret := []Token{}
+
+	for _, v := range from {
+		if v.T != t {
+			ret = append(ret, v)
+		}
+	}
+
+	return ret
 }
 

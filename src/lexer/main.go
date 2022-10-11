@@ -20,6 +20,7 @@ var (
 		syntax.Pipe : Pipe,
 		syntax.Ampersand : Ampersand,
 		syntax.Escape : Escape,
+		syntax.Hashtag : Hashtag,
 	}
 	NotFinishedQuotedWord = errors.New("Not finished quoted word")
 	EOS = errors.New("end of string")
@@ -96,6 +97,10 @@ func Pipe(s string) (token.Token, string, error) {
 	return token.New(token.Or, s[:1]), s[1:], nil
 }
 
+func Hashtag(s string) (token.Token, string, error) {
+	return token.New(token.Hashtag, s[1:]), "", nil
+}
+
 func GetNextToken(input string) (token.Token, string, error) {
 	_, s := syntax.TrimLeftSpaces(input)
 	if len(s) == 0 {
@@ -128,7 +133,7 @@ func Scan(txt string) ([]token.Token, error) {
 
 	t := ret[len(ret)-1].T
 	if !token.IsAnyOf(t, []token.Type{token.OpeningBrace,
-			token.ClosingBrace,
+			token.Semicolon,
 			token.Escape} ) {
 		ret = append(ret, token.New(token.Semicolon, string(syntax.Semicolon)))
 	}
