@@ -9,7 +9,6 @@ const (
 	Quote = '\''
 	Backquote = '`'
 	Concat = '^' 
-	Escape = '\\'
 	Semicolon = ';'
 	Ampersand = '&'
 	Hashtag = '#'
@@ -24,7 +23,6 @@ var (
 		Semicolon,
 		Ampersand,
 		Pipe,
-		Escape,
 		Backquote,
 		Concat}
 )
@@ -57,7 +55,6 @@ func IsSpecial(c byte) bool {
 	return EqAnyOf[byte](c, []byte{Concat,
 		OpeningBrace,
 		ClosingBrace,
-		Escape,
 		Semicolon})
 }
 

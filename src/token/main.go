@@ -7,6 +7,7 @@ type Type uint8
 type Token struct {
 	T Type
 	V string
+	L int
 }
 
 const (
@@ -27,10 +28,11 @@ const (
 	If
 )
 
-func New(t Type, v string) Token {
+func New(t Type, v string, l int) Token {
 	return Token{
 		T: t,
-		V: v}
+		V: v,
+		L: l,}
 }
 
 func IsAnyOf(in Type, of []Type) bool {

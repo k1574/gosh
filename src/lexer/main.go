@@ -39,18 +39,17 @@ func New() *Lexer {
 	var lexer Lexer
 	lexer.Status = Free
 	lexer.Handlers = Handlers {
-		syntax.OpeningBrace : OpeningBrace,
-		syntax.ClosingBrace : ClosingBrace,
-		syntax.Quote : QuotedWord,
-		syntax.Backquote : Backquote,
-		syntax.Concat : Concat,
-		syntax.Semicolon : Semicolon,
-		syntax.Pipe : Pipe,
-		syntax.Ampersand : Ampersand,
-		syntax.Escape : Escape,
-		syntax.Hashtag : Hashtag,
+		syntax.OpeningBrace : lexer.OpeningBrace,
+		syntax.ClosingBrace : lexer.ClosingBrace,
+		syntax.Quote : lexer.QuotedWord,
+		syntax.Backquote : lexer.Backquote,
+		syntax.Concat : lexer.Concat,
+		syntax.Semicolon : lexer.Semicolon,
+		syntax.Pipe : lexer.Pipe,
+		syntax.Ampersand : lexer.Ampersand,
+		syntax.Hashtag : lexer.Hashtag,
 	}
-
+   
 	lexer.Tokens = []token.Token{}
 
 	lexer.Storage = ""
@@ -60,7 +59,7 @@ func New() *Lexer {
 	return &lexer
 }
 
-func QuotedWord(s string) (token.Token, string, error){
+func (l *Lexer)QuotedWord(s string) (token.Token, string, error){
 	var (
 		i int
 	)
@@ -69,81 +68,78 @@ func QuotedWord(s string) (token.Token, string, error){
 		if s[i] == syntax.Quote {
 			if i == (len(s)) - 1 {
 				/* Last char in input is a Quote .*/
-				return token.New(token.QuotedWord, s[1:i-1]), "", nil
+				return token.New(token.QuotedWord, s[1:i-1], l.Line), "", nil
 			} else if s[i+1] != syntax.Quote {
 				/* Found not escaped Quote. */
-				return token.New(token.QuotedWord, s[1:i]), s[i+1:], nil
+				return token.New(token.QuotedWord, s[1:i], l.Line), s[i+1:], nil
 			}
 		}
 	}
 
-	return token.New(token.QuotedWord, s[1:]), "", NotFinishedQuotedWord
+	return token.New(token.QuotedWord, s[1:], l.Line), "", NotFinishedQuotedWord
 }
 
-func OpeningBrace(s string) (token.Token, string, error) {
-	return token.New(token.OpeningBrace, s[0:1]), s[1:], nil
+func (l *Lexer)OpeningBrace(s string) (token.Token, string, error) {
+	return token.New(token.OpeningBrace, s[0:1], l.Line), s[1:], nil
 }
 
-func ClosingBrace(s string) (token.Token, string, error) {
-	return token.New(token.ClosingBrace, s[0:1]), s[1:], nil
+func (l *Lexer)ClosingBrace(s string) (token.Token, string, error) {
+	return token.New(token.ClosingBrace, s[0:1], l.Line), s[1:], nil
 }
 
-func Backquote(s string) (token.Token, string, error) {
-	return token.New(token.Backquote, s[0:1]), s[1:], nil
+func (l *Lexer)Backquote(s string) (token.Token, string, error) {
+	return token.New(token.Backquote, s[0:1], l.Line), s[1:], nil
 }
 
-func Concat(s string) (token.Token, string, error) {
-	return token.New(token.Concat, s[0:1]), s[1:], nil
+func (l *Lexer)Concat(s string) (token.Token, string, error) {
+	return token.New(token.Concat, s[0:1], l.Line), s[1:], nil
 }
 
-func SimpleWord(s string) (token.Token, string, error){
+func (l *Lexer)SimpleWord(s string) (token.Token, string, error){
 	left, right := syntax.TrimLeftWord(s)
 
-	return token.New(token.SimpleWord, left), right, nil
+	return token.New(token.SimpleWord, left, l.Line), right, nil
 }
-func Semicolon(s string) (token.Token, string, error){
-	return token.New(token.Semicolon, s[0:1]), s[1:], nil
-}
-func Escape(s string) (token.Token, string, error){
-	return token.New(token.Escape, s[0:1]), s[1:], nil
+func (l *Lexer)Semicolon(s string) (token.Token, string, error){
+	return token.New(token.Semicolon, s[0:1], l.Line), s[1:], nil
 }
 
-func Ampersand(s string) (token.Token, string, error) {
+func (l *Lexer)Ampersand(s string) (token.Token, string, error) {
 	if len(s) > 1 {
 		if s[1] == s[0] {
-			return token.New(token.And, s[:2]), s[2:], nil
+			return token.New(token.And, s[:2], l.Line), s[2:], nil
 		} else if s[1] == syntax.Pipe {
-			return token.New(token.If, s[:2]), s[2:], nil
+			return token.New(token.If, s[:2], l.Line), s[2:], nil
 		}
 	} 
 
-	return token.New(token.Background, s[:1]), s[1:], nil
+	return token.New(token.Background, s[:1], l.Line), s[1:], nil
 }
 
-func Pipe(s string) (token.Token, string, error) {
+func (l *Lexer)Pipe(s string) (token.Token, string, error) {
 	if len(s) > 1 {
 		if s[1] == s[0] {
-			return token.New(token.Pipe, s[:2]), s[2:], nil
+			return token.New(token.Pipe, s[:2], l.Line), s[2:], nil
 		} 
 	}
 
-	return token.New(token.Or, s[:1]), s[1:], nil
+	return token.New(token.Or, s[:1], l.Line), s[1:], nil
 }
 
-func Hashtag(s string) (token.Token, string, error) {
-	return token.New(token.Hashtag, s[1:]), "", nil
+func (l *Lexer)Hashtag(s string) (token.Token, string, error) {
+	return token.New(token.Hashtag, s[1:], l.Line), "", nil
 }
 
 func (l *Lexer)GetNextToken(input string) (token.Token, string, error) {
 	_, s := syntax.TrimLeftSpaces(input)
 	if len(s) == 0 {
-		return token.New(token.Empty, ""), "", EOS
+		return token.New(token.Empty, "", l.Line), "", EOS
 	}
 
 	if v, notASimpleWord := l.Handlers[s[0]] ; notASimpleWord {
 		return v(s)
 	} else {
-		return SimpleWord(s)
+		return l.SimpleWord(s)
 	}
 }
 
@@ -170,10 +166,11 @@ func (l *Lexer)Scan(txt string) (bool, error) {
 		l.Storage += left
 		if !caught {
 			l.Storage += "\n"
+			l.Line++
 			return false, nil
 		}
 		l.Status = Free
-		l.Tokens = append(l.Tokens, token.New(token.QuotedWord, l.Storage))
+		l.Tokens = append(l.Tokens, token.New(token.QuotedWord, l.Storage, l.Line))
 		l.Storage = ""
 		txt = right
 	}
@@ -207,7 +204,7 @@ func (l *Lexer)Scan(txt string) (bool, error) {
 			token.Background,
 			token.Pipe,
 			token.If, } ) {
-		l.Tokens = append(l.Tokens, token.New(token.Semicolon, string(syntax.Semicolon)))
+		l.Tokens = append(l.Tokens, token.New(token.Semicolon, string(syntax.Semicolon), l.Line))
 	}
 
 	if t == token.Escape {

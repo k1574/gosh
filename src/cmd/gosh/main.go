@@ -25,7 +25,7 @@ func main() {
 		fmt.Printf("Status: %v\n", l.Status)
 		fmt.Println("Tokens:")
 		for _, v := range l.Tokens {
-			fmt.Printf("%d\t\"%s\"\n", v.T, v.V)
+			fmt.Printf("%d:\t%d: \t\"%s\"\n", v.T, v.L, v.V)
 		}
 	}
 
