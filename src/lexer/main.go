@@ -6,7 +6,7 @@ import (
 	"errors"
 	"github.com/surdeus/gosh/src/syntax"
 	"github.com/surdeus/gosh/src/token"
-	"fmt"
+	//"fmt"
 )
 
 type Status int8
@@ -19,6 +19,7 @@ type Lexer struct {
 	Tokens []token.Token
 	Storage string
 	Line int
+	DeepLvl int
 }
 
 const (
@@ -30,7 +31,8 @@ const (
 
 var (
 	EOS = errors.New("end of string")
-	NotFinishedQuotedWord = errors.New( "not finished quoted word")
+	NotFinishedQuotedWord = errors.New("not finished quoted word")
+	ClosingBraceWithoutOpening = errors.New("closing brace without opening")
 )
 
 func New() *Lexer {
@@ -53,6 +55,7 @@ func New() *Lexer {
 
 	lexer.Storage = ""
 	lexer.Line = 1
+	lexer.DeepLvl = 0
 
 	return &lexer
 }
@@ -110,7 +113,6 @@ func Ampersand(s string) (token.Token, string, error) {
 		if s[1] == s[0] {
 			return token.New(token.And, s[:2]), s[2:], nil
 		} else if s[1] == syntax.Pipe {
-			fmt.Println("im in")
 			return token.New(token.If, s[:2]), s[2:], nil
 		}
 	} 
@@ -157,7 +159,7 @@ func CatchFinishingQuote(s string) (bool, string, string) {
 	return false, s, ""
 }
 
-func (l *Lexer)Scan(txt string) bool {
+func (l *Lexer)Scan(txt string) (bool, error) {
 	var (
 		tok token.Token
 		err error
@@ -166,40 +168,45 @@ func (l *Lexer)Scan(txt string) bool {
 	if l.Status == InQuotedWord {
 		caught, left, right := CatchFinishingQuote(txt)
 		l.Storage += left
-		fmt.Println(caught)
 		if !caught {
 			l.Storage += "\n"
-			return false
+			return false, nil
 		}
 		l.Status = Free
-		fmt.Println(l.Status)
 		l.Tokens = append(l.Tokens, token.New(token.QuotedWord, l.Storage))
 		l.Storage = ""
 		txt = right
 	}
 
-	fmt.Println(txt)
 
 	for {
 		tok, txt, err = l.GetNextToken(txt)
 		if err == EOS {
 			break
 		} else if err == NotFinishedQuotedWord {
-			fmt.Println("getting not finished")
 			l.Status = InQuotedWord
 			l.Storage = tok.V + "\n"
-			return false
-		}else if err != nil {
-			return false
+			return false, nil
+		} else if tok.T == token.OpeningBrace {
+			l.DeepLvl++
+		} else if tok.T == token.ClosingBrace {
+			l.DeepLvl--
+			if l.DeepLvl < 0 {
+				return false, ClosingBraceWithoutOpening
+			}
+		} else if err != nil {
+			return false, err
 		}
-		fmt.Println("adding")
 		l.Tokens = append(l.Tokens, tok)
 	}
 
 	t := l.Tokens[len(l.Tokens)-1].T
 	if !token.IsAnyOf(t, []token.Type{token.OpeningBrace,
 			token.Semicolon,
-			token.Escape} ) {
+			token.Escape,
+			token.Background,
+			token.Pipe,
+			token.If, } ) {
 		l.Tokens = append(l.Tokens, token.New(token.Semicolon, string(syntax.Semicolon)))
 	}
 
@@ -207,6 +214,7 @@ func (l *Lexer)Scan(txt string) bool {
 		l.Tokens = l.Tokens[:len(l.Tokens)-2]
 	}
 
-	return l.Status == Free
+	l.Line++
+	return l.Status == Free && l.DeepLvl == 0, nil
 }
 
