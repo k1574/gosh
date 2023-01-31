@@ -8,9 +8,7 @@ type Command []token.Token
 type Type uint8
 
 type Tree struct {
-	T Type
-	// Value
-	V string
+	V token.Token
 	// Children
 	C []Tree
 }
@@ -29,14 +27,5 @@ const (
 )
 
 func Parse(tk []token.Token) (Tree, error) {
-	var (
-		i int
-		t Tree = Tree{}
-	)
-
-	for i = 0 ; i < len(tk) ; i++ {
-	}
-
-	return t
 }
 

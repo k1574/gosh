@@ -215,3 +215,11 @@ func (l *Lexer)Scan(txt string) (bool, error) {
 	return l.Status == Free && l.DeepLvl == 0, nil
 }
 
+// Get rid of exceed shit like repeating semicolons.
+func Simplify(t []token.Token) []token.Token {
+	if t[len(t) - 1].T == token.Semicolon {
+		t = t[:len(t)-2]
+	}
+	return t
+}
+
